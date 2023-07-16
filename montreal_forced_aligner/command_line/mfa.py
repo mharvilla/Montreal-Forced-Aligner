@@ -170,7 +170,7 @@ def version_cli():
         from montreal_forced_aligner._version import version
     except ImportError:
         version = None
-    print(version)
+    print(version + '-mark')
 
 
 mfa_cli.add_command(adapt_model_cli)

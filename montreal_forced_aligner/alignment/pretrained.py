@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime
 import logging
+import pdb
 import os
 import shutil
 import time
@@ -285,6 +286,7 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
         sox_string = utterance.file.sound_file.sox_string
         workflow = self.get_latest_workflow_run(WorkflowType.online_alignment, session)
         if workflow is None:
+            print('Entered workflow')
             workflow = CorpusWorkflow(
                 name=f"{utterance.id}_ali",
                 workflow_type=WorkflowType.online_alignment,
@@ -294,6 +296,7 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
             session.add(workflow)
             session.flush()
         if not sox_string:
+            print('Entered sox string')
             sox_string = utterance.file.sound_file.sound_file_path
         text_int_path = self.working_directory.joinpath("text.int")
         word_mapping = self.word_mapping(utterance.speaker.dictionary_id)
@@ -306,10 +309,12 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
             )
             f.write(f"{utterance.kaldi_id} {normalized_text_int}\n")
         if utterance.features:
+            print('Entered utterance features')
             feats_path = self.working_directory.joinpath("feats.scp")
             with mfa_open(feats_path, "w") as f:
                 f.write(f"{utterance.kaldi_id} {utterance.features}\n")
         else:
+            print('Did not enter utterance features')
             wav_path = self.working_directory.joinpath("wav.scp")
             segment_path = self.working_directory.joinpath("segments.scp")
             with mfa_open(wav_path, "w") as f:
@@ -321,10 +326,13 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
         spk2utt_path = self.working_directory.joinpath("spk2utt.scp")
         utt2spk_path = self.working_directory.joinpath("utt2spk.scp")
         with mfa_open(spk2utt_path, "w") as f:
+            print('Writing spk2utt_path')
             f.write(f"{utterance.speaker.id} {utterance.kaldi_id}\n")
         with mfa_open(utt2spk_path, "w") as f:
+            print('Writing utt2spk_path')
             f.write(f"{utterance.kaldi_id} {utterance.speaker.id}\n")
 
+        pdb.set_trace()
         args = OnlineAlignmentArguments(
             0,
             self.db_string,
@@ -341,6 +349,7 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
             self.tree_path,
             dictionary_id,
         )
+        print('Finished OnlineAlignmentArguments')
 
         max_phone_interval_id = session.query(sqlalchemy.func.max(PhoneInterval.id)).scalar()
         if max_phone_interval_id is None:
@@ -352,6 +361,7 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
         word_interval_mappings = []
         func = OnlineAlignmentFunction(args)
         for result in func.run():
+            print('Processing output of OnlineAlignmentFunction')
             if isinstance(result, Exception):
                 raise result
             _, word_intervals, phone_intervals, phone_word_mapping, log_likelihood = result
@@ -369,6 +379,7 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
                     }
                 )
             for interval in word_intervals:
+                print('Cycling through word intervals')
                 max_word_interval_id += 1
                 word_interval_mappings.append(
                     {
@@ -399,6 +410,7 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
         session.bulk_insert_mappings(
             PhoneInterval, phone_interval_mappings, return_defaults=False, render_nulls=True
         )
+        print('Committing to database')
         session.commit()
 
     def align(self, workflow_name=None) -> None:
