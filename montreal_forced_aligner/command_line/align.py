@@ -104,7 +104,6 @@ def align_corpus_cli(context, **kwargs) -> None:
     output_directory = kwargs["output_directory"]
     output_format = kwargs["output_format"]
     include_original_text = kwargs["include_original_text"]
-    pdb.set_trace()
     aligner = PretrainedAligner(
         corpus_directory=corpus_directory,
         dictionary_path=dictionary_path,

@@ -332,7 +332,6 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
             print('Writing utt2spk_path')
             f.write(f"{utterance.kaldi_id} {utterance.speaker.id}\n")
 
-        pdb.set_trace()
         args = OnlineAlignmentArguments(
             0,
             self.db_string,
@@ -360,6 +359,7 @@ class PretrainedAligner(TranscriberMixin, TopLevelMfaWorker):
         phone_interval_mappings = []
         word_interval_mappings = []
         func = OnlineAlignmentFunction(args)
+        pdb.set_trace()
         for result in func.run():
             print('Processing output of OnlineAlignmentFunction')
             if isinstance(result, Exception):

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import pdb
 import subprocess
 import typing
 from pathlib import Path
@@ -199,6 +200,7 @@ class OnlineAlignmentFunction(KaldiFunction):
         if not os.path.exists(lda_mat_path):
             lda_mat_path = None
         with mfa_open(self.log_path, "w") as log_file:
+            print('doing this')
             proc = subprocess.Popen(
                 [
                     thirdparty_binary("compile-train-graphs"),
@@ -224,6 +226,7 @@ class OnlineAlignmentFunction(KaldiFunction):
                     self.lda_options,
                     log_file,
                 )
+                print('did this')
 
                 # Features done, alignment
                 align_proc = subprocess.Popen(
@@ -248,6 +251,7 @@ class OnlineAlignmentFunction(KaldiFunction):
                     env=os.environ,
                 )
             else:
+                print('actually did this')
                 feat_string = f"ark,s,cs:splice-feats --left-context={self.lda_options['splice_left_context']} --right-context={self.lda_options['splice_right_context']} scp,s,cs:\"{feat_path}\" ark:- |"
                 feat_string += f' transform-feats "{lda_mat_path}" ark:- ark:- |'
                 align_proc = subprocess.Popen(
@@ -271,6 +275,7 @@ class OnlineAlignmentFunction(KaldiFunction):
                     env=os.environ,
                 )
             align_proc.communicate()
+            pdb.set_trace()
             ctm_proc = subprocess.Popen(
                 [
                     thirdparty_binary("ali-to-phones"),
@@ -314,7 +319,9 @@ class OnlineAlignmentFunction(KaldiFunction):
                 stdout=subprocess.PIPE,
                 env=os.environ,
             )
+            pdb.set_trace()
             for utterance, intervals in parse_ctm_output(ctm_proc, self.reversed_phone_mapping):
+                print('we out here')
                 while True:
                     prons_line = prons_proc.stdout.readline().strip()
                     if prons_line:
